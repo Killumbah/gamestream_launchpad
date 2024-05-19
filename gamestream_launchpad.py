@@ -17,21 +17,6 @@ def windowEnumerationHandler(hwnd, top_windows):
     top_windows.append((hwnd, win32gui.GetWindowText(hwnd)))
 
 
-def set_resolution(gamestream_width, gamestream_height,refresh_rate=None):
-    if refresh_rate is None:
-        print("Switching resolution to {0}x{1}".format(gamestream_width, gamestream_height))
-    else:
-        print("Switching resolution to {0}x{1} at {2}Hz".format(gamestream_width, gamestream_height,refresh_rate))
-    devmode = pywintypes.DEVMODEType()
-    devmode.PelsWidth = int(gamestream_width)
-    devmode.PelsHeight = int(gamestream_height)
-    devmode.Fields = win32con.DM_PELSWIDTH | win32con.DM_PELSHEIGHT
-    if refresh_rate is not None:
-        devmode.DisplayFrequency = refresh_rate
-        devmode.Fields |= win32con.DM_DISPLAYFREQUENCY
-    win32api.ChangeDisplaySettings(devmode, 0)
-
-
 def get_process_name(p):
     # If there are permission errors reading a process name, it's probably not the one we want, so skip it.
     try:
@@ -41,18 +26,6 @@ def get_process_name(p):
         pass
     return p_name
 
-
-def reset_launcher_resolution(gamestream_width, gamestream_height, launcher_window_name):
-    # Check to ensure desired GSLP resolution is still set whenever the launcher is in focus in case it didn't reset when exiting a game
-    focused_window = win32gui.GetWindowText(win32gui.GetForegroundWindow()).lstrip()
-    #print("Trying to match", launcher_window_name, focused_window)
-    if focused_window.startswith(launcher_window_name):
-        #print("Matched")
-        current_width = str(win32api.GetSystemMetrics(0))
-        current_height = str(win32api.GetSystemMetrics(1))
-        if current_width != gamestream_width and current_height != gamestream_height:
-            print("Resolutions don't match, changing from", current_width, current_height, "to", gamestream_width, gamestream_height)
-            set_resolution(gamestream_width, gamestream_height)
 
 def handle_processes(paths, terminate):
     for path in paths:
@@ -108,14 +81,8 @@ if not os.path.exists(config_filename):
     with open(config_filename, 'w') as out_file:
         out_file.write(default_config)
 
-# Target resolution for gamestream environment
-try:
-    if '-r' in sys.argv:
-        rind = sys.argv.index('-r')
-        sys.argv.pop(rind)
-        refresh_rate = int(sys.argv.pop(rind))
-    else:
-        refresh_rate = None    
+# Target config.ini for gamestream environment
+try:  
     if '--no-nv-kill' in sys.argv:
         no_nv_kill = True
         sys.argv.remove('--no-nv-kill')
@@ -126,12 +93,9 @@ try:
         sys.argv.remove('--skip-res-reset')
     else:
         skip_res_reset = False
-
-    gamestream_width = sys.argv[1]
-    gamestream_height = sys.argv[2]
-    # If there's a 3rd argument after the .py/.exe, use it as a custom launcher path
-    if len(sys.argv) == 4:
-        config_filename = sys.argv[3]
+    # If there's a 2nd argument after the .py/.exe, use it as a custom launcher path
+    if len(sys.argv) == 2:
+        config_filename = sys.argv[1]
 except IndexError:
     print("Error parsing arguments. Did you mean to run one of the .bat launcher scripts?")
     print("Usage: gamestream_launchpad.exe 1920 1080 [config.ini] [-r refresh_rate_hz]")
@@ -157,9 +121,6 @@ sleep_on_exit = config['SETTINGS'].get('sleep_on_exit', '0')
 close_watch_method = config['SETTINGS'].get('close_watch_method', 'window')
 
 launcher_exec_name = os.path.basename(cfg_launcher_path)
-
-# Set resolution to target
-set_resolution(gamestream_width, gamestream_height,refresh_rate)
 
 # Start background and session_start programs, if they're available
 launch_processes(cfg_bg_paths)
@@ -214,14 +175,12 @@ else:
         while win32gui.IsWindowVisible(launcher_window_handle):
             #print("Visible:", launcher_window_handle)
             sleep(2)
-            reset_launcher_resolution(gamestream_width, gamestream_height, cfg_launcher_window_name)
     # Alternative method that waits for the process to die (can be problematic if it minimizes to system tray)
     elif close_watch_method == "process":
         print("Watching for launcher process to die")
         while True:
             if launcher_exec_name in (get_process_name(p) for p in psutil.process_iter()):
                 sleep(2)
-                reset_launcher_resolution(gamestream_width, gamestream_height, cfg_launcher_window_name)
             else:
                 break
     elif close_watch_method == "playnite_mutex":
@@ -248,10 +207,6 @@ else:
 kill_processes(cfg_bg_paths)
 launch_processes(cfg_end_paths)
 
-# Restore original resolution
-if skip_res_reset == False:
-    print('Restoring original resolution.')
-    win32api.ChangeDisplaySettings(None, 0)
 
 # Kill gamestream
 if no_nv_kill == False:
