@@ -1,4 +1,4 @@
-**All credits go to (cgarst)[https://github.com/cgarst] for creating this software. This fork is simply removes the resolution changer and adds functionality for Steam Big Picture Mode.**
+**All credits go to [cgarst](https://github.com/cgarst) for creating this software. This fork is simply removes the resolution changer and adds functionality for Steam Big Picture Mode.**
 
 # GameStream Launchpad 🚀
 
