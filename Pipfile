@@ -11,6 +11,3 @@ pypiwin32 = "*"
 psutil = "*"
 PyAutoGUI = "*"
 pyinstaller = "*"
-
-[requires]
-python_version = "3.10"
