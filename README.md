@@ -15,8 +15,7 @@ Configurations are included for **[Playnite](https://github.com/JosefNemec/Playn
 ## Basic Setup
  1. Install [Playnite](https://github.com/JosefNemec/Playnite) (recommended, supports controllers), [GOG Galaxy 2](https://www.gog.com/galaxy) or [Steam](https://steampowered.com/) and configure it to your liking.
  2. Download the latest [release](https://github.com/killumbah/gamestream_launchpad/releases/) and extract the files somewhere.
- 3a. Open GeForce experience and navigate to Settings > SHIELD > ADD.
- 3b. Open Sunshine and navigate to Applications > Add New.
+ 3. Open Sunshine and navigate to Applications > Add New **or** open GeForce experience and navigate to Settings > SHIELD > ADD.
  4. In the file picker, select the `.bat` script with the launcher.
  
 ## Customization
